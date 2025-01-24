@@ -1,6 +1,5 @@
 package com.kuzmins.library.dao;
 
-import com.kuzmins.library.models.Book;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ public class PersonDAO {
         return session.createQuery("select p from Person p where p.fullName=?1", Person.class)
                 .setParameter(1, fullName)
                 .getResultList().stream().findAny();
-        //return Optional.ofNullable(session.get(Person.class, fullName));
     }
 
     @Transactional(readOnly = true)
