@@ -1,35 +1,52 @@
 package com.kuzmins.library.models;
 
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "Book")
 public class Book {
 
-        private int id;
+    @Column(name = "id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
-        @NotEmpty(message = "Name should not be empty")
-        @Size(min = 1, max = 50, message = "name should be from 1 to 50")
-        private String bookName;
+    @NotEmpty(message = "Name should not be empty")
+    @Size(min = 1, max = 50, message = "name should be from 1 to 50")
+    @Column(name = "bookname")
+    private String bookName;
 
-        @NotEmpty(message = "Name should not be empty")
-        @Size(min = 2, max = 100, message = "Name should be from 2 to 100 characters")
-        private String author;
+    @NotEmpty(message = "Name should not be empty")
+    @Size(min = 2, max = 100, message = "Name should be from 2 to 100 characters")
+    @Column(name = "author")
+    private String author;
 
-        @Min(value = 1000, message = "Year of publication should have this format: 1985")
-        private int yearOfPublication;
+    @Min(value = 1000, message = "Year of publication should have this format: 1985")
+    @Column(name = "yearofpublication")
+    private int yearOfPublication;
 
-        private int personId;
+    @ManyToOne
+    @JoinColumn(name = "person", referencedColumnName = "id")
+    private Person person;
 
-        public Book() {}
-        public Book(int id, String bookName, String author, int yearOfPublication, int personId) {
-            this.id = id;
-            this.bookName = bookName;
-            this.author = author;
-            this.yearOfPublication = yearOfPublication;
-            this.personId = personId;
-        }
+    public Book() {
+    }
+
+    public Book(String bookName, String author, int yearOfPublication) {
+        this.bookName = bookName;
+        this.author = author;
+        this.yearOfPublication = yearOfPublication;
+    }
 
     public int getId() {
         return id;
@@ -63,11 +80,11 @@ public class Book {
         this.yearOfPublication = yearOfPublication;
     }
 
-    public int getPersonId() {
-        return personId;
+    public Person getPerson() {
+        return person;
     }
 
-    public void setPersonId(int personId) {
-        this.personId = personId;
+    public void setPerson(Person person) {
+        this.person = person;
     }
 }

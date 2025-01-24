@@ -1,60 +1,86 @@
 package com.kuzmins.library.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.kuzmins.library.models.Person;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Component;
 import com.kuzmins.library.models.Book;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Component
 public class BookDAO {
-    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public BookDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    private final SessionFactory sessionFactory;
+
+    public BookDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
+    @Transactional(readOnly = true)
     public List<Book> allBooks() {
-        return jdbcTemplate.query("SELECT * FROM book", new BookMapper());
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select b from Book b", Book.class).getResultList();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Book> getBook(String bookName) {
-        return jdbcTemplate.query("SELECT * FROM book WHERE bookname=?",
-                new Object[]{bookName}, new BookMapper()).stream().findAny();
+        Session session = sessionFactory.getCurrentSession();
+        return Optional.ofNullable(session.get(Book.class, bookName));
     }
 
+    @Transactional(readOnly = true)
     public Book getBook(int id) {
-        return jdbcTemplate.query("SELECT * FROM book WHERE id=?", new Object[]{id}, new BookMapper())
-                .stream().findAny().orElse(null);
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Book.class, id);
     }
 
+    @Transactional
     public void saveBook(Book book) {
-        jdbcTemplate.update("INSERT INTO book(bookname, author, yearofpublication) VALUES ( ?, ?, ?)",
-                book.getBookName(), book.getAuthor(), book.getYearOfPublication());
+        Session session = sessionFactory.getCurrentSession();
+        session.save(book);
     }
 
+    @Transactional
     public void updateBook(int id, Book newBook) {
-        jdbcTemplate.update("UPDATE book SET bookname=?, author=?, yearofpublication=? WHERE id=?",
-                newBook.getBookName(), newBook.getAuthor(), newBook.getYearOfPublication(), id);
+        Session session = sessionFactory.getCurrentSession();
+
+        Book bookForUpdating = session.get(Book.class, id);
+
+        bookForUpdating.setBookName(newBook.getBookName());
+        bookForUpdating.setAuthor(newBook.getAuthor());
+        bookForUpdating.setYearOfPublication(newBook.getYearOfPublication());
+        bookForUpdating.setPerson(newBook.getPerson());
     }
 
+    @Transactional
     public void deleteBook(int id) {
-        jdbcTemplate.update("DELETE FROM book WHERE id=?", id);
+        Session session = sessionFactory.getCurrentSession();
+        session.remove(session.get(Book.class, id));
     }
 
-    public void possessBook(int bookId, int personId) {
-        jdbcTemplate.update("UPDATE book SET personId=? WHERE id=?", personId, bookId);
+    @Transactional
+    public void possessBook(int bookId, Person person) {
+        Session session = sessionFactory.getCurrentSession();
+        Book possessedBook = session.get(Book.class, bookId);
+        possessedBook.setPerson(person);
     }
 
+    @Transactional
     public void deletePossessor(int bookId) {
-        jdbcTemplate.update("UPDATE book SET personid=null WHERE id=?", bookId);
+        Session session = sessionFactory.getCurrentSession();
+        Book possessedBook = session.get(Book.class, bookId);
+        possessedBook.setPerson(null);
     }
 
+    @Transactional(readOnly = true)
     public List<Book> findPossessedBooks(int id) {
-        return jdbcTemplate.query("SELECT * FROM book WHERE personid=?", new Object[]{id}, new BookMapper());
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select b from Book b where person.id=?1", Book.class)
+                .setParameter(1, id)
+                .getResultList();
     }
 
 }
