@@ -8,14 +8,14 @@
 <p th:text="${book.getBookName() + ', ' +book.getAuthor() + ', ' + book.getYearOfPublication()}">book</p>
 
 <div>
-    <div th:if="${book.getPersonId()}">
+    <div th:if="${book.getPerson()}">
         <span th:text="${'The book is taken by ' + man.getFullName()}"></span>
         <form th:method="PATCH" th:action="@{/books/{bookId}/admin (bookId=${book.getId()})}">
             <input type="submit" value="Return the book"/>
         </form>
     </div>
 
-    <div th:unless="${book.getPersonId()}">
+    <div th:unless="${book.getPerson()}">
         <span>This book is not taken. Who wants to read it?</span>
         <form th:method="PATCH" th:action="@{/books/{bookId}/admin/add (bookId=${book.getId()})}">
             <label for="person">Choose a person</label>
